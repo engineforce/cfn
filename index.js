@@ -55,6 +55,7 @@ const colorMap = {
   CREATE_COMPLETE: 'green',
   CREATE_FAILED: 'red',
   DELETE_IN_PROGRESS: 'gray',
+  DELETE_SKIPPED: 'gray',
   DELETE_COMPLETE: 'green',
   DELETE_FAILED: 'red',
   ROLLBACK_FAILED: 'red',
@@ -140,6 +141,9 @@ function Cfn (name, template) {
         events = _.sortBy(events, 'Timestamp')
         _.forEach(events, function (event) {
           displayedEvents[event.EventId] = true
+
+          const colorizeEventStatus = chalk[colorMap[event.ResourceStatus]] ? chalk[colorMap[event.ResourceStatus]] : chalk.grey
+
           if (moment(event.Timestamp).valueOf() >= startedAt) {
             log(sprintf('[%s] %s %s: %s - %s  %s  %s',
               chalk.gray(moment(event.Timestamp).format('HH:mm:ss')),
@@ -147,7 +151,7 @@ function Cfn (name, template) {
               chalk.cyan(name),
               event.ResourceType,
               event.LogicalResourceId,
-              chalk[colorMap[event.ResourceStatus]](event.ResourceStatus),
+              colorizeEventStatus(event.ResourceStatus),
               event.ResourceStatusReason || ''
             ))
           }
